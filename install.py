@@ -168,17 +168,6 @@ def render_banner(animated=True):
             time.sleep(0.02)
     else:
         console.print(Align.center(logo_text))
-
-    title_text = Text("MILEHOST MCP SERVER", style="bold #ffffff")
-    tagline_text = Text("Official Model Context Protocol Suite for Google Antigravity & AI Agents", style="dim #888891")
-    
-    header_panel = Panel(
-        Align.center(Text.assemble(title_text, "\n", tagline_text)),
-        border_style="#26262b",
-        box=box.ROUNDED,
-        padding=(0, 2)
-    )
-    console.print(header_panel)
     console.print()
 
 def install_mcp():
