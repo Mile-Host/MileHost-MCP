@@ -11,6 +11,15 @@
 установи этот mcp https://github.com/Mile-Host/MileHost-MCP"
 ```
 
+# Ручной вариант, если не хочешь тратить лимиты. (Для Antigravity)
+1. Скачай install.py
+2. Запусти нажатием или
+ ```cmd
+python install.py
+```
+3. Следуй инструкциям.
+4. Готово!
+
 # Функции
 <img width="2560" height="1564" alt="image" src="https://github.com/user-attachments/assets/b5c3b668-df68-4f4b-979e-4ee7fafc8d7b" />
 
