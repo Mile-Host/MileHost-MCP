@@ -1,8 +1,11 @@
 # MileHost MCP Server
 <img width="2560" height="1564" alt="image" src="https://github.com/user-attachments/assets/ca8f435a-7572-461b-9c77-b1e770064e89" />
-Это официальный mcp сервер от команды MiLe Host (совместно с lgteamai) 
+Это официальный mcp сервер от команды MiLe Host (совместно с lgteamai и Astro Ai)
+Исходный код полностью открыт,
+Файлы репозитория распространяются по лицензии MIT.
 
-## чтобы установить, просто попроси своего ИИ агента 
+
+# чтобы установить, попроси своего ИИ агента 
 
 ```пиши это в Claude Code/Antigravity
 установи этот mcp https://github.com/Mile-Host/MileHost-MCP"
