@@ -2,7 +2,11 @@
 
 Это официальный mcp сервер от команды MiLe Host (совместно с lgteamai) 
 
--- чтобы установить, просто попроси своего ИИ агента "установи этот mcp https://github.com/Mile-Host/MileHost-MCP"
+-- чтобы установить, просто попроси своего ИИ агента 
+
+```пиши это в Claude Code/Antigravity
+установи этот mcp https://github.com/Mile-Host/MileHost-MCP"
+```
 
 # Функции
 
