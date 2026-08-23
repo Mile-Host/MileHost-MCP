@@ -1,0 +1,4 @@
+node_modules/
+.milehost_agent*.json
+.env*
+*.log

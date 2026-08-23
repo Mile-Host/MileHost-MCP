@@ -1,0 +1,28 @@
+{
+  "name": "milehost-mcp",
+  "version": "1.0.0",
+  "description": "Official Model Context Protocol (MCP) Server for MileHost",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "milehost-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "start:sse": "node index.js --transport=sse"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "milehost",
+    "telegram-bot-hosting",
+    "ai-agent"
+  ],
+  "author": "MiLe Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
