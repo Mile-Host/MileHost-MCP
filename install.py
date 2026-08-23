@@ -476,7 +476,7 @@ def main():
 
     menu_text = Text()
     menu_text.append("[ 1 ]  ", style="bold #b2e11a")
-    menu_text.append("Установить / Обновить MCP Server в Antigravity\n", style="bold #ffffff")
+    menu_text.append("Установить / Обновить MCP Server в Antigravity 2.0\n", style="bold #ffffff")
     menu_text.append("[ 2 ]  ", style="bold red")
     menu_text.append("Удалить MCP Server из Antigravity\n", style="bold #ffffff")
     menu_text.append("[ 3 ]  ", style="dim #888891")
