@@ -21,6 +21,7 @@
 и много других...
 
 ### Готовы начать? 
-<img width="2560" height="1564" alt="image" src="https://github.com/user-attachments/assets/ae5655b9-1be5-4b5e-9185-5e08832459b4" />
+<img width="2560" height="1564" alt="image" src="https://github.com/user-attachments/assets/d7f0c56d-6ce0-4588-95d1-5fa43fe6f917" />
+
 
 Зайдите на mile.host и купите контейнер, далее подключите этот mcp и начните работу в Claude Code!
