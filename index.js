@@ -31,13 +31,6 @@ export function getCredentialPaths() {
     paths.push(path.join(os.homedir(), '.milehost_agent.json'));
     paths.push(path.join(os.homedir(), '.gemini', 'antigravity', 'mcp', 'milehost', '.milehost_agent.json'));
   } catch (e) {}
-  try {
-    const currentDir = path.dirname(fileURLToPath(import.meta.url));
-    paths.push(path.join(currentDir, '.milehost_agent.json'));
-  } catch (e) {}
-  try {
-    paths.push(path.join(process.cwd(), '.milehost_agent.json'));
-  } catch (e) {}
   return [...new Set(paths.map(p => path.resolve(p)))];
 }
 
@@ -639,10 +632,6 @@ const TOOLS = [
         force: {
           type: 'boolean',
           description: 'Force update even if version matches'
-        },
-        branch: {
-          type: 'string',
-          description: 'GitHub branch to fetch updates from (default: main)'
         }
       }
     }
@@ -656,10 +645,6 @@ const TOOLS = [
         force: {
           type: 'boolean',
           description: 'Force update even if version matches'
-        },
-        branch: {
-          type: 'string',
-          description: 'GitHub branch to fetch updates from (default: main)'
         }
       }
     }
@@ -669,12 +654,7 @@ const TOOLS = [
     description: 'Checks if a newer version or schema update of MileHost MCP Server is available on GitHub.',
     inputSchema: {
       type: 'object',
-      properties: {
-        branch: {
-          type: 'string',
-          description: 'GitHub branch to check (default: main)'
-        }
-      }
+      properties: {}
     }
   },
   {
@@ -682,12 +662,7 @@ const TOOLS = [
     description: 'Checks if a newer version or schema update of MileHost MCP Server is available on GitHub.',
     inputSchema: {
       type: 'object',
-      properties: {
-        branch: {
-          type: 'string',
-          description: 'GitHub branch to check (default: main)'
-        }
-      }
+      properties: {}
     }
   }
 ];
@@ -1117,7 +1092,8 @@ export function getCurrentPackageDir() {
   return path.dirname(fileURLToPath(import.meta.url));
 }
 
-export async function fetchGithubFile(filename, branch = 'main') {
+export async function fetchGithubFile(filename) {
+  const branch = 'main';
   const urls = [
     `https://raw.githubusercontent.com/Mile-Host/MileHost-MCP/${branch}/${filename}`,
     `https://raw.githubusercontent.com/Mile-Host/MileHost-MCP/${branch}/mcp-package/${filename}`
@@ -1139,11 +1115,11 @@ export async function fetchGithubFile(filename, branch = 'main') {
       lastError = e;
     }
   }
-  throw new Error(`Failed to download ${filename} from Mile-Host/MileHost-MCP on branch '${branch}': ${lastError?.message || 'Not found'}`);
+  throw new Error(`Failed to download ${filename} from Mile-Host/MileHost-MCP on branch 'main': ${lastError?.message || 'Not found'}`);
 }
 
-export async function handleCheckUpdates(args = {}) {
-  const branch = args.branch || 'main';
+export async function handleCheckUpdates() {
+  const branch = 'main';
   const currentPkgDir = getCurrentPackageDir();
 
   let localVersion = '1.0.0';
@@ -1152,7 +1128,7 @@ export async function handleCheckUpdates(args = {}) {
     localVersion = JSON.parse(localPkgRaw).version || localVersion;
   } catch (e) {}
 
-  const remotePkgText = await fetchGithubFile('package.json', branch);
+  const remotePkgText = await fetchGithubFile('package.json');
   const remotePkg = JSON.parse(remotePkgText);
   const remoteVersion = remotePkg.version || 'unknown';
 
@@ -1177,8 +1153,8 @@ export async function handleCheckUpdates(args = {}) {
   };
 }
 
-export async function handleSelfUpdate(args = {}) {
-  const branch = args.branch || 'main';
+export async function handleSelfUpdate() {
+  const branch = 'main';
   const currentPkgDir = getCurrentPackageDir();
   const antigravityDir = getAntigravityMcpDir();
 
@@ -1188,12 +1164,12 @@ export async function handleSelfUpdate(args = {}) {
     localVersion = JSON.parse(localPkgRaw).version || localVersion;
   } catch (e) {}
 
-  const remotePkgText = await fetchGithubFile('package.json', branch);
+  const remotePkgText = await fetchGithubFile('package.json');
   const remotePkg = JSON.parse(remotePkgText);
   const remoteVersion = remotePkg.version || localVersion;
 
-  const indexJsText = await fetchGithubFile('index.js', branch);
-  const installPyText = await fetchGithubFile('install.py', branch);
+  const indexJsText = await fetchGithubFile('index.js');
+  const installPyText = await fetchGithubFile('install.py');
 
   const targetDirs = [...new Set([currentPkgDir, antigravityDir].map(d => path.resolve(d)))];
   const updatedFiles = [];
@@ -1269,14 +1245,17 @@ export function formatErrorResponse(error) {
     };
   }
 
+  const isNetworkOrNotFound = /fetch|ENOTFOUND|ECONNREFUSED|404|500|502|503/i.test(message);
   return {
     content: [
       {
         type: 'text',
         text: JSON.stringify({
           error: message,
-          status: 'UPDATE_REQUIRED',
-          recommendation: 'Run tool milehost_self_update to pull the latest tools, schemas, and bugfixes directly from GitHub.'
+          status: isNetworkOrNotFound ? 'UPDATE_REQUIRED' : 'ERROR',
+          recommendation: isNetworkOrNotFound
+            ? 'Run tool milehost_self_update to pull the latest tools, schemas, and bugfixes directly from GitHub.'
+            : 'Verify your input arguments and server connection.'
         }, null, 2)
       }
     ],
@@ -1287,7 +1266,7 @@ export function formatErrorResponse(error) {
 export function createServer() {
   const server = new Server(
     {
-      name: 'milehost-agent-mcp',
+      name: 'milehost',
       version: '1.0.0'
     },
     {
@@ -1298,25 +1277,20 @@ export function createServer() {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return { tools: TOOLS };
+    return {
+      tools: TOOLS
+    };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: toolArgs } = request.params;
+
     try {
       if (name === 'milehost_connect') {
         return await handleConnect(toolArgs || {});
-      } else if (name === 'milehost_list_folders' || name === 'milehost_list_servers') {
-        return await handleListFolders(toolArgs || {});
-      } else if (
-        name === 'create-file' ||
-        name === 'create_file' ||
-        name === 'write-to-file' ||
-        name === 'write_to_file' ||
-        name === 'milehost_deploy_file' ||
-        name === 'milehost_create_file' ||
-        name === 'milehost_write_to_file'
-      ) {
+      } else if (name === 'milehost_list_servers' || name === 'milehost_list_folders') {
+        return await handleListServers(toolArgs || {});
+      } else if (name === 'create-file' || name === 'create_file' || name === 'write-to-file' || name === 'write_to_file' || name === 'milehost_deploy_file') {
         return await handleDeployFile(toolArgs || {});
       } else if (name === 'milehost_read_file' || name === 'milehost_get_file') {
         return await handleReadFile(toolArgs || {});
@@ -1331,9 +1305,9 @@ export function createServer() {
       } else if (name === 'milehost_reboot' || name === 'milehost-reboot' || name === 'milehost_restart_server') {
         return await handleRestartServer(toolArgs || {});
       } else if (name === 'milehost_self_update' || name === 'milehost-self-update') {
-        return await handleSelfUpdate(toolArgs || {});
+        return await handleSelfUpdate();
       } else if (name === 'milehost_check_updates' || name === 'milehost-check-updates') {
-        return await handleCheckUpdates(toolArgs || {});
+        return await handleCheckUpdates();
       } else {
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }
@@ -1348,9 +1322,10 @@ export function createServer() {
 export async function main() {
   if (isSseMode) {
     const app = express();
-    const PORT = process.env.PORT || 3001;
+    const PORT = Number(process.env.PORT) || 3001;
+    const HOST = '127.0.0.1';
 
-    app.use(cors());
+    app.use(cors({ origin: ['http://localhost', 'http://127.0.0.1'] }));
 
     const transports = new Map();
 
@@ -1375,10 +1350,10 @@ export async function main() {
       await transport.handlePostMessage(req, res);
     });
 
-    app.listen(PORT, () => {
-      console.error(`MileHost MCP Server listening on SSE transport port ${PORT}`);
-      console.error(`SSE endpoint: http://localhost:${PORT}/sse`);
-      console.error(`Message endpoint: http://localhost:${PORT}/message`);
+    app.listen(PORT, HOST, () => {
+      console.error(`MileHost MCP Server listening on SSE transport at http://${HOST}:${PORT}`);
+      console.error(`SSE endpoint: http://${HOST}:${PORT}/sse`);
+      console.error(`Message endpoint: http://${HOST}:${PORT}/message`);
     });
   } else {
     process.stdin.resume();
